@@ -1,6 +1,6 @@
 
 #' Snowpack Depth on Forest Floor
-#' by Kelsey Warren
+#' Kelsey Warren
 #' ESM 262 Computing
 #' Feb 20 2025
 #'
