@@ -1,0 +1,99 @@
+---
+title: "262 HW #2 - Forest Snowpack"
+author: "Kelsey Warren"
+date: "2025-02-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(purrr)
+library(ggpubr)
+```
+
+## Homework instructions
+
+Think of a function that might be useful for environmental science and management data analysis. Keep it simple.
+
+1.  Code your function in R and store as a single .R file. Make sure you adequately comment and include some error checking.
+
+2.  In Rmarkdown, generate some sample data and use this data to illustrate how your function might work. Then use this data to show what your function can do. You can be creative here - the illustration might be a graph or it could be a meaningful result (sum of yields). Just make sure you add enough text that we can understand what you did
+
+3.  Submit the .R file and the Rmarkdown file and html on Canvas
+
+Grading Rubric
+
+Correct coding of a function in R (10 pts) Inclusion of error checking (5 pts) Good programming style (comments, variables names) (5 pts) Generation of sample data (5 pts) Demonstration of function use (5 pts)
+
+## Load function & test error checking
+
+```{r }
+source("~/Desktop/262 Computing/R/forest_snowpack.R")
+
+# test the error checking written into the function:
+
+# test a negative depth for previous year snowpack
+forest_snowpack(prev_pack=-30, snowfall_rate=7, runoff_rate=2, interception=.06, day=89)
+
+# test an abnormally large average daily snowfall rate
+forest_snowpack(prev_pack=30, snowfall_rate=214, runoff_rate=2, interception=.06, day=89)
+
+# test a negative value for average daily runoff rate
+forest_snowpack(prev_pack=30, snowfall_rate=7, runoff_rate=-2, interception=.06, day=89)
+
+# test interception rates less than 0% and greater than 100%
+forest_snowpack(prev_pack=30, snowfall_rate=7, runoff_rate=2, interception=-.06, day=89)
+forest_snowpack(prev_pack=30, snowfall_rate=7, runoff_rate=2, interception=1.06, day=89)
+
+# test a day that exceeds the 180 day snowfall season 
+forest_snowpack(prev_pack=30, snowfall_rate=7, runoff_rate=2, interception=.06, day=183)
+```
+
+## Generate sample data
+
+```{r }
+# Generate inputs and define parameters
+day = 1:180
+day_numeric = as.numeric(day)
+prev_pack = 30
+snowfall_rate = 5.5 # avg snowfall/season in Tahoe is 392in = 996cm. 996cm/180days = 5.5cm/day
+runoff_rate = 0.8
+interception = 0.35
+
+# create a data frame to store results
+snow_results = data.frame(day_numeric=day_numeric, snowpack_depth=NA)
+
+```
+
+## Apply function & save results
+
+```{r}
+
+# apply function and save results in data frame
+snow_results$snowpack_depth = forest_snowpack(prev_pack,snowfall_rate,runoff_rate,interception,day_numeric)
+
+
+```
+
+## Doing a couple creative things with the function results!
+
+```{r}
+
+# determine the total snowpack remaining on the forest floor (cm) at the beginning, middle, and end of the Tahoe snow season
+print(snow_results$snowpack_depth[snow_results$day == 1])
+print(snow_results$snowpack_depth[snow_results$day == 90])
+print(snow_results$snowpack_depth[snow_results$day == 180])
+
+
+# view a plot of how forest floor snowpack changes on average daily over the Tahoe snow season
+# note that this simple function uses an average daily rate of snowfall and runoff, so this curve will not reflect storm events and major runoff events
+ggplot(snow_results, aes(day,snowpack_depth) )+
+  geom_point(size=2, col="darkblue")+
+  geom_ribbon(aes(ymin = 0, ymax = snowpack_depth), fill = "lightblue", alpha = 0.4) +
+  labs(title="Snowpack Depth on Tahoe Forest Floor by Day of Snow Season", 
+       y="Snowpack Depth on Forest Floor (cm)",
+       x="Day of Snow Season (1=Nov1, 180=Apr30)")
+
+```
